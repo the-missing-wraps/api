@@ -1,17 +1,25 @@
 import Fastify from 'fastify';
+import mongoose from 'mongoose';
 import { pino } from 'pino';
+import CONFIG from './config.js';
 
-const fastify = Fastify({
+import applicationsRoutes from './components/applications/applicationRoutes.js';
+
+try {
+    await mongoose.connect(CONFIG.MONGODB.URI);
+} catch (error) {
+    console.error(error);
+}
+
+const app = Fastify({
     logger: pino({ level: 'info' })
 });
 
-fastify.get('/applications', function handler(_request, _reply) {
-    return { hello: 'world' };
-});
+applicationsRoutes(app);
 
 try {
-    await fastify.listen({ port: 3000 });
+    await app.listen({ port: CONFIG.PORT });
 } catch (error) {
-    fastify.log.error(error);
+    app.log.error(error);
     throw error;
 }
