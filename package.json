@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "transpile": "tsc -p source",
-    "start": "node dist/main.js",
+    "start": "node --loader esm-module-alias/loader --no-warnings  dist/main.js",
     "serve": "npm run transpile && npm start",
     "lint": "eslint source --ext ts --format codeframe",
     "lint:fix": "eslint source --ext ts --format codeframe --fix"
@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.3.1",
+    "esm-module-alias": "^2.1.0",
     "fastify": "^4.25.1",
     "fastify-plugin": "^4.5.1",
     "mongoose": "^8.0.3"
@@ -25,5 +26,8 @@
     "@types/node": "^20.10.4",
     "@types/pino": "^7.0.5",
     "typescript": "^5.3.3"
+  },
+  "aliases": {
+    "@": "./dist"
   }
 }

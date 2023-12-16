@@ -5,6 +5,10 @@
         "moduleResolution": "NodeNext",
         "noImplicitAny": true,
         "strictNullChecks": true,
-        "outDir": "../dist"
+        "outDir": "../dist",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./*"],
+        }
     }
 }
