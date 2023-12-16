@@ -1,16 +1,17 @@
-import Fastify from "fastify";
+import Fastify from 'fastify';
+import { pino } from 'pino';
 
 const fastify = Fastify({
-  logger: true,
+    logger: pino({ level: 'info' })
 });
 
-fastify.get("/applications", function handler(_request, _reply) {
-  return { hello: "world" };
+fastify.get('/applications', function handler(_request, _reply) {
+    return { hello: 'world' };
 });
 
 try {
-  await fastify.listen({ port: 3000 });
+    await fastify.listen({ port: 3000 });
 } catch (error) {
-  fastify.log.error(error);
-  throw error;
+    fastify.log.error(error);
+    throw error;
 }

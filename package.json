@@ -15,11 +15,15 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.3.1",
-    "fastify": "^4.25.1"
+    "fastify": "^4.25.1",
+    "fastify-plugin": "^4.5.1",
+    "mongoose": "^8.0.3"
   },
   "devDependencies": {
     "@euberdeveloper/eslint-plugin": "^2.6.0",
+    "@types/mongoose": "^5.11.97",
     "@types/node": "^20.10.4",
+    "@types/pino": "^7.0.5",
     "typescript": "^5.3.3"
   }
 }
