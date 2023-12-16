@@ -4,7 +4,7 @@ import { RequestWithIdParam } from '../../types/index.js';
 
 export const fetch: RouteHandler = async (_request, reply) => {
     try {
-        const applications = await Application.find();
+        const applications = await Application.find({});
         await reply.code(200).send(applications);
     } catch (error) {
         await reply.code(500).send(error);
@@ -14,8 +14,8 @@ export const fetch: RouteHandler = async (_request, reply) => {
 export const fetchOne: RouteHandler = async (request: RequestWithIdParam, reply) => {
     try {
         const applicationId = request.params.id;
-        const note = await Application.findById(applicationId);
-        await reply.code(200).send(note);
+        const application = await Application.findById(applicationId);
+        await reply.code(200).send(application);
     } catch (error) {
         await reply.code(500).send(error);
     }
