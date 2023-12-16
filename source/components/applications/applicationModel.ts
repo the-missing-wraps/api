@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { TestEnvironment, Usage } from '../../types/index.js';
+import { TestEnvironment, Usage } from '@/types/index.js';
 
 interface ApplicationSchema {
     company: string;

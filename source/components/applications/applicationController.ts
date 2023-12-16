@@ -1,6 +1,7 @@
 import { RouteHandler } from 'fastify';
+import { RequestWithIdParam } from '@/types/index.js';
+
 import { Application } from './applicationModel.js';
-import { RequestWithIdParam } from '../../types/index.js';
 
 export const fetch: RouteHandler = async (_request, reply) => {
     try {
