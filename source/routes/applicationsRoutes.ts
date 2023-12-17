@@ -2,7 +2,12 @@ import { FastifyPluginAsync } from 'fastify';
 import { v4 as uuid } from 'uuid';
 import { Application } from '@/types/index.js';
 
-import applicationBodyJsonSchema, { ApplicationBody } from '@/schemas/applicationSchema.js';
+import {
+    applicationBodyJsonSchema,
+    ApplicationBody,
+    AssessBody,
+    assessBodyJsonSchema
+} from '@/schemas/applicationSchema.js';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 const routes: FastifyPluginAsync = async (fastify, _options) => {
@@ -55,5 +60,14 @@ const routes: FastifyPluginAsync = async (fastify, _options) => {
     fastify.delete<{ Params: { token: string } }>('/token/:token', async (request, _reply) => {
         await collection.deleteOne({ token: request.params.token });
     });
+
+    fastify.post<{ Params: { id: string }; Body: AssessBody }>(
+        '/:id/assess',
+        { schema: { body: assessBodyJsonSchema } },
+        async (request, _reply) => {
+            const id = new fastify.mongo.ObjectId(request.params.id);
+            return collection.updateOne({ _id: id, status: 'pending' }, { $set: { status: request.body.status } });
+        }
+    );
 };
 export default routes;

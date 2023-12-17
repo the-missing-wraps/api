@@ -5,7 +5,7 @@ export type ApplicationBody = Pick<
     'companyInformation' | 'when' | 'usage' | 'serviceTypes' | 'description'
 >;
 
-const applicationBodyJsonSchema = {
+export const applicationBodyJsonSchema = {
     type: 'object',
     required: ['companyInformation', 'when', 'usage', 'serviceTypes', 'description'],
     properties: {
@@ -41,4 +41,18 @@ const applicationBodyJsonSchema = {
         description: { type: 'string' }
     }
 };
-export default applicationBodyJsonSchema;
+
+export type AssessBody = {
+    status: 'approved' | 'rejected';
+};
+
+export const assessBodyJsonSchema = {
+    type: 'object',
+    required: ['status'],
+    properties: {
+        status: {
+            type: 'string',
+            enum: ['approved', 'rejected']
+        }
+    }
+};
