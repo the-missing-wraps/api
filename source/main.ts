@@ -2,9 +2,12 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import mongoose from 'mongoose';
 import { pino } from 'pino';
-import CONFIG from '@/config.js';
 
-import applicationsRoutes from '@/components/applications/applicationRoutes.js';
+import bodyParser from '@/utils/bodyParser.js';
+import databaseConnector from '@/utils/databaseConnector.js';
+import applicationRoutes from '@/routes/applicationsRoutes.js';
+
+import CONFIG from '@/config.js';
 
 try {
     await mongoose.connect(CONFIG.MONGODB.URI);
@@ -12,27 +15,18 @@ try {
     console.error(error);
 }
 
-const app = Fastify({
+const fastify = Fastify({
     logger: pino({ level: 'info' })
 });
 
-await app.register(cors);
-
-app.addContentTypeParser('application/json', { parseAs: 'string' }, function (_req, body: string, done) {
-    try {
-        const json = JSON.parse(body);
-        done(null, json);
-    } catch (error) {
-        error.statusCode = 400;
-        done(error);
-    }
-});
-
-applicationsRoutes(app);
+await fastify.register(cors);
+bodyParser(fastify);
+await fastify.register(databaseConnector);
+await fastify.register(applicationRoutes, { prefix: '/api/applications' });
 
 try {
-    await app.listen({ port: CONFIG.API.PORT, host: CONFIG.API.HOST });
+    await fastify.listen({ port: CONFIG.API.PORT, host: CONFIG.API.HOST });
 } catch (error) {
-    app.log.error(error);
+    fastify.log.error(error);
     throw error;
 }
