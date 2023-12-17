@@ -26,9 +26,10 @@ const routes: FastifyPluginAsync = async (fastify, _options) => {
                 status: true
             })
             .toArray();
-        return (bookings as any).reduce((acc: any, curr: any) => {
+        return bookings.reduce<BookingDates>((acc, curr) => {
             for (const date of curr.when) {
-                const dateString = date.toISOString().slice(10);
+                console.log(curr)
+                const dateString = date.toISOString().slice(0, 10);
                 const previousDate = acc[dateString] as BookingDatesDetails | undefined;
 
                 acc[dateString] = {
@@ -40,13 +41,14 @@ const routes: FastifyPluginAsync = async (fastify, _options) => {
                     count: previousDate?.count ? previousDate.count++ : 1
                 } as BookingDatesDetails;
             }
+            return acc;
         }, {});
     }
 
     async function checkBooking(booking: Application): Promise<boolean> {
         const bookings = await getBookingDates();
         for (const date of booking.when) {
-            const dateStr = date.toISOString().slice(10);
+            const dateStr = date.toISOString().slice(0, 10);
             const preexistendBooking = bookings[dateStr] as BookingDatesDetails | undefined;
 
             if (!preexistendBooking) {
