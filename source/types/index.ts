@@ -20,9 +20,13 @@ export interface Application {
     token: string;
 }
 
-export interface Booking {
-    when: Date[];
+export interface BookingDatesDetails {
     usage: Usage;
     serviceTypes: ServiceType[];
     status: Status;
+    count: number;
+}
+
+export interface BookingDates {
+    [key: string]: BookingDatesDetails;
 }

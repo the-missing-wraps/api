@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { v4 as uuid } from 'uuid';
-import { Application, Booking } from '@/types/index.js';
+import { Application, BookingDates, BookingDatesDetails } from '@/types/index.js';
 
 import {
     applicationBodyJsonSchema,
@@ -9,13 +9,15 @@ import {
     assessBodyJsonSchema
 } from '@/schemas/applicationSchema.js';
 import { arrayIncludesAnotherArray } from '@/utils/arrayIncludesAnotherArray.js';
+import { mergeServiceTypes } from '@/utils/mergeServiceTypes.js';
+import { MAX_SHARED_BOOKINGS } from '@/utils/thresholds.js';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 const routes: FastifyPluginAsync = async (fastify, _options) => {
     const collection = fastify.mongo.db!.collection<Application>('applications');
 
-    async function getBookings(): Promise<Booking[]> {
-        return await (collection
+    async function getBookingDates(): Promise<BookingDates> {
+        const bookings = await collection
             .find({})
             .project({
                 when: true,
@@ -23,23 +25,46 @@ const routes: FastifyPluginAsync = async (fastify, _options) => {
                 serviceTypes: true,
                 status: true
             })
-            .toArray() as any);
+            .toArray();
+        return (bookings as any).reduce((acc: any, curr: any) => {
+            for (const date of curr.when) {
+                const dateString = date.toISOString().slice(10);
+                const previousDate = acc[dateString] as BookingDatesDetails | undefined;
+
+                acc[dateString] = {
+                    usage: previousDate?.usage === 'exclusive' ? 'exclusive' : curr.usage,
+                    serviceTypes: previousDate?.serviceTypes
+                        ? mergeServiceTypes(previousDate.serviceTypes, curr.serviceTypes)
+                        : curr.serviceTypes,
+                    status: previousDate?.status === 'approved' ? previousDate.status : curr.status,
+                    count: previousDate?.count ? previousDate.count++ : 1
+                } as BookingDatesDetails;
+            }
+        }, {});
     }
 
-    async function checkBooking(booking: Booking): Promise<boolean> {
-        if (booking.usage === 'shared') {
-            return false;
+    async function checkBooking(booking: Application): Promise<boolean> {
+        const bookings = await getBookingDates();
+        for (const date of booking.when) {
+            const dateStr = date.toISOString().slice(10);
+            const preexistendBooking = bookings[dateStr] as BookingDatesDetails | undefined;
+
+            if (!preexistendBooking) {
+                continue;
+            }
+
+            if (!arrayIncludesAnotherArray(booking.serviceTypes, preexistendBooking.serviceTypes)) {
+                continue;
+            }
+
+            if (preexistendBooking.usage === 'exclusive' || booking.usage === 'exclusive') {
+                return false;
+            } else if (preexistendBooking.count >= MAX_SHARED_BOOKINGS) {
+                return false;
+            }
         }
 
-        const bookings = await getBookings();
-        bookings.some(
-            element =>
-                element.status === 'pending' &&
-                element.usage === 'exclusive' &&
-                arrayIncludesAnotherArray(element.serviceTypes, booking.serviceTypes) &&
-                arrayIncludesAnotherArray(element.when, booking.when)
-        );
-        return bookings.length > 0;
+        return true;
     }
 
     fastify.get('/', async (_request, _reply) => {
@@ -93,7 +118,7 @@ const routes: FastifyPluginAsync = async (fastify, _options) => {
         async (request, reply) => {
             const application: ApplicationBody = request.body;
 
-            if (!(await checkBooking({ ...application, status: 'pending' }))) {
+            if (!(await checkBooking({ ...application, status: 'pending' } as any))) {
                 await reply.status(400).send('Application has conflict');
                 throw new Error('Application has conflict');
             }
@@ -116,7 +141,7 @@ const routes: FastifyPluginAsync = async (fastify, _options) => {
     );
 
     fastify.get('/bookings', async (_request, _reply) => {
-        return getBookings();
+        return getBookingDates();
     });
 };
 export default routes;
