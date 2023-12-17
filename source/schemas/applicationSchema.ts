@@ -24,7 +24,7 @@ const applicationBodyJsonSchema = {
             type: 'array',
             items: {
                 type: 'string',
-                format: 'date-time'
+                format: 'date'
             }
         },
         usage: {

@@ -24,10 +24,11 @@ const routes: FastifyPluginAsync = async (fastify, _options) => {
     });
 
     fastify.post<{ Body: ApplicationBody }>(
-        '/applications',
+        '/',
         { schema: { body: applicationBodyJsonSchema } },
         async (request, _reply) => {
-            return collection.insertOne({ ...request.body, status: 'pending' });
+            const result = await collection.insertOne({ ...request.body, status: 'pending' });
+            return result.insertedId;
         }
     );
 };
