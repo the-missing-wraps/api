@@ -1,6 +1,5 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import mongoose from 'mongoose';
 import { pino } from 'pino';
 
 import bodyParser from '@/utils/bodyParser.js';
@@ -8,12 +7,6 @@ import databaseConnector from '@/utils/databaseConnector.js';
 import applicationRoutes from '@/routes/applicationsRoutes.js';
 
 import CONFIG from '@/config.js';
-
-try {
-    await mongoose.connect(CONFIG.MONGODB.URI);
-} catch (error) {
-    console.error(error);
-}
 
 const fastify = Fastify({
     logger: pino({ level: 'info' })
