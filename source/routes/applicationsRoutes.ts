@@ -1,5 +1,6 @@
-import { Application } from '@/types/index.js';
 import { FastifyPluginAsync } from 'fastify';
+import { v4 as uuid } from 'uuid';
+import { Application } from '@/types/index.js';
 
 import applicationBodyJsonSchema, { ApplicationBody } from '@/schemas/applicationSchema.js';
 
@@ -27,9 +28,32 @@ const routes: FastifyPluginAsync = async (fastify, _options) => {
         '/',
         { schema: { body: applicationBodyJsonSchema } },
         async (request, _reply) => {
-            const result = await collection.insertOne({ ...request.body, status: 'pending' });
+            const result = await collection.insertOne({ ...request.body, status: 'pending', token: uuid() });
             return result.insertedId;
         }
     );
+
+    fastify.get<{ Params: { token: string } }>('/token/:token', async (request, reply) => {
+        const result = await collection.findOne({ token: request.params.token });
+
+        if (!result) {
+            await reply.status(404).send('Not found');
+            throw new Error('Not found');
+        }
+
+        return result;
+    });
+
+    fastify.put<{ Params: { token: string }; Body: ApplicationBody }>(
+        '/token/:token',
+        { schema: { body: applicationBodyJsonSchema } },
+        async (request, _reply) => {
+            await collection.updateOne({ token: request.params.token }, { $set: request.body });
+        }
+    );
+
+    fastify.delete<{ Params: { token: string } }>('/token/:token', async (request, _reply) => {
+        await collection.deleteOne({ token: request.params.token });
+    });
 };
 export default routes;

@@ -17,4 +17,5 @@ export interface Application {
     serviceTypes: ServiceType[];
     description: string;
     status: Status;
+    token: string;
 }
