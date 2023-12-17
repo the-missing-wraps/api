@@ -19,3 +19,10 @@ export interface Application {
     status: Status;
     token: string;
 }
+
+export interface Booking {
+    when: Date[];
+    usage: Usage;
+    serviceTypes: ServiceType[];
+    status: Status;
+}
