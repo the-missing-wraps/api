@@ -28,7 +28,6 @@ const routes: FastifyPluginAsync = async (fastify, _options) => {
             .toArray();
         return bookings.reduce<BookingDates>((acc, curr) => {
             for (const date of curr.when) {
-                console.log(curr)
                 const dateString = date.toISOString().slice(0, 10);
                 const previousDate = acc[dateString] as BookingDatesDetails | undefined;
 
